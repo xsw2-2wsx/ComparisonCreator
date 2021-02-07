@@ -1,11 +1,11 @@
 package comparisoncreator.data.entities
 
 data class Device(
-    val name: String,
+    var name: String,
 
-    val price: String,
+    var price: String,
 
-    val url: String,
+    var url: String,
 
-    val properties: Map<String, String>
+    var properties: MutableMap<String, String>
 )
