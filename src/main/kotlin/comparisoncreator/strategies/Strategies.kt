@@ -1,6 +1,5 @@
 package comparisoncreator.strategies
 
-import comparisoncreator.exceptions.ComparisonCrationException
 import comparisoncreator.exceptions.NotEnoughDevicesException
 import comparisoncreator.util.allPossibleSubcollectionsSized
 
