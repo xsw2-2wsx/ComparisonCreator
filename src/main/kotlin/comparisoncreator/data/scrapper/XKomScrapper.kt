@@ -8,7 +8,9 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class XKomScrapper @Inject constructor(
     @XKomBaseUrl private val xKomBaseUrl: String
 ): Scrapper {
@@ -17,19 +19,19 @@ class XKomScrapper @Inject constructor(
         private val log: Logger = LogManager.getLogger()
     }
 
-    private fun fetchDocument(url: String): Document = Jsoup.connect(url).get()
+    private fun fetchDocument(url: String): Document = Jsoup.connect(url).timeout(60000).get()
 
 
     fun scrapDocumentForDevice(doc: Document): Device {
         log.debug("Scrapping the document for device")
 
-        val name = doc.select("h1.sc-1x6crnh-5").text()
+        val name = doc.select("h1[class = sc-1bker4h-4 driGYx ]").text()
 
-        val price = doc.select("div[ class = u7xnnm-4 iVazGO ]").text()
+        val price = doc.select("div[ class = u7xnnm-4 jFbqvs ]").text()
 
         val properties = HashMap<String, String>()
 
-        val propertyRows: Elements = doc.select("[ class = sc-bwzfXH sc-13p5mv-0 cwztyD sc-htpNat gSgMmi ]")
+        val propertyRows: Elements = doc.select("[ class = sc-bwzfXH sc-13p5mv-0 iZvwEi sc-htpNat kNOaST ]")
 
         propertyRows.forEach {
             val children = it.children()
@@ -45,12 +47,12 @@ class XKomScrapper @Inject constructor(
 
     fun scrapSearchPageForUrls(doc: Document): List<String> =
         doc
-            .select("a[ class = sc-1h16fat-0 dEoadv ]")
+            .select("a[ class = sc-1h16fat-0 irSQpN ]")
             .eachAttr("abs:href")
 
     override fun fetchDeviceUrlsFromSearchPage(url: String) = scrapSearchPageForUrls(fetchDocument(url))
 
-    fun scrapMaxPage(doc: Document): Int = doc.select("a[ class = sc-1h16fat-0 sc-1xy3kzh-8 cQVHUq ]").last().text().toIntOrNull()?: 1
+    fun scrapMaxPage(doc: Document): Int = doc.select("a[ class = sc-1h16fat-0 sc-1xy3kzh-11 jbvHat ]").last().text().toIntOrNull()?: 1
 
     override fun search(query: String): List<String> {
         val baseQueryUrl = "$xKomBaseUrl/szukaj?q=$query"
