@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
+import javax.inject.Singleton
 
 @Module
 class MockupUrlModule {
@@ -20,6 +21,7 @@ class MockupUrlModule {
     fun getUrl(): String = "test"
 }
 
+@Singleton
 @Component(
     modules = [
         XKomScrapperModule::class,
@@ -58,13 +60,13 @@ class ScrapperTests {
 
         val urls = scrapper.scrapSearchPageForUrls(doc)
 
-        Assertions.assertEquals(8, urls.size)
+        Assertions.assertEquals(30, urls.size)
         assertTrue(urls.map(String::isNotEmpty).reduce(Boolean::and))
     }
 
     @Test
     fun scrapMaxPageTest() {
-        val html: String = File("src/test/resources/MaxPageScrapTest.html").readText()
+        val html: String = File("src/test/resources/SearchResult.html").readText()
         val doc = Jsoup.parse(html, "https://www.test.com")
 
         val result = scrapper.scrapMaxPage(doc)
