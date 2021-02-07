@@ -2,6 +2,7 @@ package comparisoncreator.data.scrapper
 
 import comparisoncreator.data.di.XKomBaseUrl
 import comparisoncreator.data.entities.Device
+import comparisoncreator.exceptions.ScrappingException
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.jsoup.Jsoup
@@ -43,26 +44,51 @@ class XKomScrapper @Inject constructor(
         return Device(name, price, doc.baseUri(), properties)
     }
 
-    override fun fetchDevice(url: String): Device = scrapDocumentForDevice(fetchDocument(url))
+    override fun fetchDevice(url: String): Device = try {
+        scrapDocumentForDevice(fetchDocument(url))
+    }
+    catch(e: Exception) {
+        val message = "Could not scrap $url for device"
+        log.error("$message\n${e.stackTraceToString()}")
+        throw ScrappingException(message, e)
+    }
 
     fun scrapSearchPageForUrls(doc: Document): List<String> =
         doc
             .select("a[ class = sc-1h16fat-0 irSQpN ]")
             .eachAttr("abs:href")
 
-    override fun fetchDeviceUrlsFromSearchPage(url: String) = scrapSearchPageForUrls(fetchDocument(url))
+    override fun fetchDeviceUrlsFromSearchPage(url: String) = try {
+        scrapSearchPageForUrls(fetchDocument(url))
+    }
+    catch (e: Exception) {
+        val message = "Could not fetch device urls from page $url"
+        log.error("$message\n${e.stackTraceToString()}")
+        throw ScrappingException(message, e)
+    }
 
-    fun scrapMaxPage(doc: Document): Int = doc.select("a[ class = sc-1h16fat-0 sc-1xy3kzh-11 jbvHat ]").last().text().toIntOrNull()?: 1
+    fun scrapMaxPage(doc: Document): Int =
+        doc
+            .select("a[ class = sc-1h16fat-0 sc-1xy3kzh-11 jbvHat ]")
+            .last()
+            .text()
+            .toIntOrNull()
+            ?: 1
 
-    override fun search(query: String): List<String> {
+    override fun search(query: String): List<String> = try{
         val baseQueryUrl = "$xKomBaseUrl/szukaj?q=$query"
         val doc = fetchDocument(baseQueryUrl)
         val maxPage = scrapMaxPage(doc)
 
-        return generateSequence(1) { it + 1}
+        generateSequence(1) { it + 1}
             .takeWhile { it <= maxPage }
             .map { "$baseQueryUrl&page=$it" }
             .toList()
+    }
+    catch (e: Exception) {
+        val message = "Could not search for $query"
+        log.error("$message\n${e.stackTraceToString()}")
+        throw ScrappingException(message, e)
     }
 
 
