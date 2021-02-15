@@ -72,9 +72,9 @@ class XKomScrapper @Inject constructor(
     fun scrapMaxPage(doc: Document): Int =
         doc
             .select("a[ class = sc-1h16fat-0 sc-1xy3kzh-11 jbvHat ]")
-            .last()
-            .text()
-            .toIntOrNull()
+            .lastOrNull()
+            ?.text()
+            ?.toIntOrNull()
             ?: 1
 
     override fun search(query: String): List<String> = try{
