@@ -1,5 +1,8 @@
-package comparisoncreator
+package comparisoncreator.api
 
+import comparisoncreator.api.wrappers.DeviceUrl
+import comparisoncreator.api.wrappers.SearchPageUrl
+import comparisoncreator.api.wrappers.SearchQuery
 import comparisoncreator.data.entities.Device
 import comparisoncreator.data.scrapper.Scrapper
 import comparisoncreator.di.DaggerComparisonComponent
@@ -16,6 +19,7 @@ import kotlin.jvm.Throws
  * The [Collection] is implementation of a Set<Devices> and stores the devices from which the
  * comparison should be created.
  */
+@Suppress("UNUSED")
 class Comparison @Inject constructor(
     var strategy: @JvmSuppressWildcards Strategy,
     private var scrapper: Scrapper,
@@ -28,6 +32,7 @@ class Comparison @Inject constructor(
 
         @JvmStatic
         fun newComparison(): Comparison = comparisonFactory.getComparison()
+
         fun newComparison(configuration: Comparison.() -> Unit): Collection<Device> =
             newComparison().apply { configuration() }.create()
     }
@@ -35,40 +40,78 @@ class Comparison @Inject constructor(
     /**
      * Searches for a specified [query] and returns a list of URLs to result pages.
      * @param query query to search for
-     * @return A collection of URLs to search result pages.
+     * @return A collection of [SearchPageUrl] representing URLs to search result pages.
      * @throws ScrappingException
      */
     @Throws(ScrappingException::class)
-    fun search(query: String): Collection<String> = scrapper.search(query)
+    fun search(query: String): Collection<SearchPageUrl> = scrapper.search(query).map(::SearchPageUrl)
+
+    /**
+     * Searches for a specified [query] and returns a list of URLs to result pages.
+     * @param query query to search for
+     * @return A collection of [SearchPageUrl] representing URLs to search result pages.
+     * @throws ScrappingException
+     */
+    @Throws(ScrappingException::class)
+    fun search(query: SearchQuery): Collection<SearchPageUrl> = search(query.value)
 
     /**
      * Searches for a specified query and returns a list of URLs to result pages.
      * @receiver query to search for
-     * @return A collection of URLs to search result pages.
+     * @return A collection of [SearchPageUrl] representing URLs to search result pages.
      * @throws ScrappingException
      */
     @Throws(ScrappingException::class)
     @JvmName("searchExtension")
-    fun String.search(): Collection<String> = search(this)
+    fun String.search(): Collection<SearchPageUrl> = search(this)
+
+    /**
+     * Searches for a specified query and returns a list of URLs to result pages.
+     * @receiver [SearchQuery] query to search for
+     * @return A collection of [SearchPageUrl] representing URLs to search result pages.
+     * @throws ScrappingException
+     */
+    @Throws(ScrappingException::class)
+    @JvmName("searchForSearchQueryExtension")
+    fun SearchQuery.search(): Collection<SearchPageUrl> = search(value)
 
     /**
      * Retrieves URLs of devices on a search page
      * @param url URL of the search page
-     * @return a collection of URLs of devices
+     * @return a collection of [DeviceUrl] representing URLs of devices
      * @throws ScrappingException
      */
     @Throws(ScrappingException::class)
-    fun deviceUrls(url: String): Collection<String> = scrapper.fetchDeviceUrlsFromSearchPage(url)
+    fun deviceUrls(url: String): Collection<DeviceUrl> = scrapper.fetchDeviceUrlsFromSearchPage(url).map(::DeviceUrl)
+
+    /**
+     * Retrieves URLs of devices on a search page
+     * @param url URL of the search page
+     * @return a collection of [DeviceUrl] representing URLs of devices
+     * @throws ScrappingException
+     */
+    @Throws(ScrappingException::class)
+    fun deviceUrls(url: SearchPageUrl): Collection<DeviceUrl> = deviceUrls(url.value)
 
     /**
      * Retrieves URLs of devices on a search page
      * @receiver URL of the search page
-     * @return a collection of URLs of devices
+     * @return a collection of [DeviceUrl] representing URLs of devices
      * @throws ScrappingException
      */
     @Throws(ScrappingException::class)
     @JvmName("deviceUrlsExtension")
-    fun String.deviceUrls(): Collection<String> = deviceUrls(this)
+    fun String.deviceUrls(): Collection<DeviceUrl> = deviceUrls(this)
+
+    /**
+     * Retrieves URLs of devices on a search page
+     * @receiver the url to fetch device URLs from
+     * @return a collection of [DeviceUrl] representing URLs of devices
+     * @throws ScrappingException
+     */
+    @Throws(ScrappingException::class)
+    @JvmName("deviceUrlsSearchPageUrlExtension")
+    fun SearchPageUrl.deviceUrls(): Collection<DeviceUrl> = deviceUrls(value)
 
     /**
      * Scraps the device from product page
@@ -81,6 +124,15 @@ class Comparison @Inject constructor(
 
     /**
      * Scraps the device from product page
+     * @param url URL of the product page
+     * @return a device
+     * @throws ScrappingException
+     */
+    @Throws(ScrappingException::class)
+    fun fetchDevice(url: DeviceUrl): Device = fetchDevice(url.value)
+
+    /**
+     * Scraps the device from product page
      * @receiver URL of the product page
      * @return a device
      * @throws ScrappingException
@@ -88,6 +140,10 @@ class Comparison @Inject constructor(
     @Throws(ScrappingException::class)
     @JvmName("fetchDeviceExtension")
     fun String.fetchDevice(): Device = fetchDevice(this)
+
+    @Throws(ScrappingException::class)
+    @JvmName("fetchDeviceDeviceUrlExtension")
+    fun DeviceUrl.fetchDevice(): Device = fetchDevice(value)
 
     /**
      * Scraps the devices from product page URLs
@@ -97,6 +153,15 @@ class Comparison @Inject constructor(
      */
     @Throws(ScrappingException::class)
     fun fetchDevices(vararg urls: String): Collection<Device> = urls.toSet().map(::fetchDevice)
+
+    /**
+     * Scraps the devices from product page URLs
+     * @param urls URLs of the product pages
+     * @return a collection of devices
+     * @throws ScrappingException
+     */
+    @Throws(ScrappingException::class)
+    fun fetchDevices(vararg urls: DeviceUrl): Collection<Device> = fetchDevices(*urls.map { it.value }.toTypedArray())
 
     /**
      * Adds specified device to the comparison

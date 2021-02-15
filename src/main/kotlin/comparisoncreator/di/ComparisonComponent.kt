@@ -1,6 +1,6 @@
 package comparisoncreator.di
 
-import comparisoncreator.Comparison
+import comparisoncreator.api.Comparison
 import comparisoncreator.data.di.XKomScrapperModule
 import comparisoncreator.data.di.XKomUrlModule
 import comparisoncreator.solver.di.DefaultSolverModule
