@@ -20,12 +20,13 @@ class XKomScrapper @Inject constructor(
         private val log: Logger = LogManager.getLogger()
     }
 
-    private fun fetchDocument(url: String): Document = Jsoup.connect(url).timeout(60000).get()
+    private fun fetchDocument(url: String): Document {
+        log.debug("Fetching $url ...")
+        return Jsoup.connect(url).timeout(60000).get()
+    }
 
 
     fun scrapDocumentForDevice(doc: Document): Device {
-        log.debug("Scrapping the document for device")
-
         val name = doc.select("h1[class = sc-1bker4h-4 driGYx ]").text()
 
         val price = doc.select("div[ class = u7xnnm-4 jFbqvs ]").text()
@@ -39,9 +40,10 @@ class XKomScrapper @Inject constructor(
 
             properties[children[0].text()] = children[1].text()
         }
+        val device = Device(name, price, doc.baseUri(), properties)
+        log.debug("Scrapped a Device: $device")
 
-        log.debug("Scrapping successful")
-        return Device(name, price, doc.baseUri(), properties)
+        return device
     }
 
     override fun fetchDevice(url: String): Device = try {
@@ -76,9 +78,13 @@ class XKomScrapper @Inject constructor(
             ?: 1
 
     override fun search(query: String): List<String> = try{
+        log.debug("Searching for: $query")
+
         val baseQueryUrl = "$xKomBaseUrl/szukaj?q=$query"
         val doc = fetchDocument(baseQueryUrl)
         val maxPage = scrapMaxPage(doc)
+
+        log.debug("Discovered $maxPage pages")
 
         generateSequence(1) { it + 1}
             .takeWhile { it <= maxPage }
