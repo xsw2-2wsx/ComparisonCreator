@@ -27,7 +27,7 @@ class XKomScrapper @Inject constructor(
 
 
     fun scrapDocumentForDevice(doc: Document): Device {
-        val name = doc.select("h1[class = sc-1bker4h-4 driGYx ]").text()
+        val name = doc.select("h1.sc-1bker4h-4").first().text()
 
         val price = doc.select("div[ class = u7xnnm-4 jFbqvs ]").text()
 
