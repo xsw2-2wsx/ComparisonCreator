@@ -33,7 +33,7 @@ class XKomScrapper @Inject constructor(
 
         val properties = HashMap<String, String>()
 
-        val propertyRows: Elements = doc.select("[ class = sc-bwzfXH sc-13p5mv-0 iZvwEi sc-htpNat kNOaST ]")
+        val propertyRows: Elements = doc.select("[ class = sc-bwzfXH sc-13p5mv-0 dqxkPb sc-htpNat kNOaST ]")
 
         propertyRows.forEach {
             val children = it.children()
