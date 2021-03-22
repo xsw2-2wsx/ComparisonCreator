@@ -10,6 +10,8 @@ import comparisoncreator.exceptions.ComparisonCreationException
 import comparisoncreator.exceptions.ScrappingException
 import comparisoncreator.solver.Solver
 import comparisoncreator.strategies.Strategy
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import javax.inject.Inject
 import kotlin.jvm.Throws
 
@@ -29,6 +31,8 @@ class Comparison @Inject constructor(
 
     companion object {
         private val comparisonFactory = DaggerComparisonComponent.create()
+
+        private val log: Logger = LogManager.getLogger()
 
         @JvmStatic
         fun newComparison(): Comparison = comparisonFactory.getComparison()
@@ -189,6 +193,9 @@ class Comparison @Inject constructor(
      * @throws ComparisonCreationException
      */
     @Throws(ComparisonCreationException::class)
-    fun create(): Collection<Device> = strategy(this, solver)
+    fun create(): Collection<Device> {
+        log.debug("Executing strategy")
+        return strategy(this, solver)
+    }
 
 }
